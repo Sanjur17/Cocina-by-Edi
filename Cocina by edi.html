@@ -17,8 +17,6 @@
             <p>Productos frescos, caseros y con sabor a hogar.</p>
         </div>
 
-        <a href="contactos.html" class="pestana-contacto" aria-label="Ir a contactos">Contactos</a>
-
         <main class="contenido-web">
             <h1 class="logo">
                 <button class="logo-ampliable" type="button" aria-label="Ampliar logo de Mi Cocina By Edi" data-logo-ampliable>
@@ -29,11 +27,7 @@
             <p>Bienvenidos a nuestra cocina.</p>
             <p>Acá podrás ver nuestras recetas, productos y promociones.</p>
 
-            <div class="filtros-menu" aria-label="Buscar y filtrar el menú">
-                <label class="campo-busqueda">
-                    <span>Buscar un plato</span>
-                    <input type="search" data-busqueda-productos placeholder="Ej.: brownie, flan..." autocomplete="off">
-                </label>
+            <div class="filtros-menu" aria-label="Filtrar el menú por categoría">
                 <label class="campo-categoria">
                     <span>Categoría</span>
                     <select data-filtro-categoria>
@@ -45,6 +39,8 @@
                     </select>
                 </label>
             </div>
+
+            <nav class="categorias-rapidas" aria-label="Categorías del menú"></nav>
 
             <section class="menu-comidas" id="menu-comidas" aria-label="Menú de comidas">
                 <a class="link-producto" data-categoria="salsas" href="producto.html?producto=chimichurri">
@@ -75,7 +71,7 @@
                     </article>
                 </a>
 
-                <a class="link-producto" data-categoria="postres" href="producto.html?producto=pai">
+                <a class="link-producto" data-categoria="platos" href="producto.html?producto=pai">
                     <article class="tarjeta-comida">
                         <img src="Productos/Pai.jpeg" alt="Pai casero horneado" loading="lazy" decoding="async">
                         <div class="info-comida">
@@ -167,7 +163,10 @@
                 <h3>Sabores de hogar, hechos para compartir.</h3>
                 <p>Descubre platos caseros, frescos y llenos de cariño en cada bocado.</p>
             </div>
-            <a href="Cocina by edi.html#menu-comidas" class="boton-comercial">Ver el menú</a>
+            <div class="acciones-comercial">
+                <a href="Cocina by edi.html#menu-comidas" class="boton-comercial">Ver el menú</a>
+                <a href="contactos.html" class="boton-contacto-comercial">Contactos</a>
+            </div>
         </section>
 
         <section class="video-comercial" aria-labelledby="titulo-video-comercial">

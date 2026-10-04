@@ -77,46 +77,148 @@ const productos = {
   }
 };
 
-const inicializarFiltrosProductos = () => {
-  const buscador = document.querySelector("[data-busqueda-productos]");
-  const filtroCategoria = document.querySelector("[data-filtro-categoria]");
-  const menu = document.querySelector("#menu-comidas");
+const CATEGORIAS_MENU = {
+  salsas: "Salsas",
+  platos: "Platos principales",
+  postres: "Postres",
+  bebidas: "Bebidas"
+};
 
-  if (!buscador || !filtroCategoria || !menu) {
+const ORDEN_CATEGORIAS = Object.keys(CATEGORIAS_MENU);
+
+const getMenuCartas = () => [...document.querySelectorAll("#menu-comidas .link-producto")];
+
+const crearBotonCategoria = (categoria) => {
+  const boton = document.createElement("button");
+  boton.type = "button";
+  boton.className = "boton-categoria";
+  boton.textContent = CATEGORIAS_MENU[categoria] || "Productos";
+  boton.setAttribute("data-boton-categoria", categoria);
+  boton.addEventListener("click", () => {
+    const filtroCategoria = document.querySelector("[data-filtro-categoria]");
+    if (filtroCategoria) {
+      filtroCategoria.value = categoria;
+      filtroCategoria.dispatchEvent(new Event("change", { bubbles: true }));
+    }
+
+    const seccion = document.getElementById(`categoria-${categoria}`);
+    if (seccion) {
+      seccion.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  });
+  return boton;
+};
+
+const inicializarBotonesCategorias = (tarjetas = getMenuCartas()) => {
+  const contenedor = document.querySelector(".categorias-rapidas");
+  if (!contenedor) {
     return;
   }
 
-  const tarjetas = [...menu.querySelectorAll(".link-producto")];
+  const categoriasDisponibles = [...new Set(
+    tarjetas
+      .filter((tarjeta) => !tarjeta.hidden)
+      .map((tarjeta) => tarjeta.dataset.categoria)
+      .filter(Boolean)
+  )];
+
+  contenedor.innerHTML = "";
+  ORDEN_CATEGORIAS.forEach((categoria) => {
+    if (categoriasDisponibles.includes(categoria)) {
+      contenedor.appendChild(crearBotonCategoria(categoria));
+    }
+  });
+};
+
+const crearSeccionCategoria = (categoria, tarjetas) => {
+  const seccion = document.createElement("section");
+  seccion.className = "categoria-productos";
+  seccion.id = `categoria-${categoria}`;
+
+  const titulo = document.createElement("h3");
+  titulo.className = "titulo-categoria";
+  titulo.textContent = CATEGORIAS_MENU[categoria] || "Productos";
+
+  const contenedor = document.createElement("div");
+  contenedor.className = "grid-categoria";
+  tarjetas.forEach((tarjeta) => contenedor.appendChild(tarjeta));
+
+  seccion.appendChild(titulo);
+  seccion.appendChild(contenedor);
+  return seccion;
+};
+
+const reordenarProductosPorCategoria = (tarjetas = getMenuCartas()) => {
+  const menu = document.querySelector("#menu-comidas");
+  if (!menu) {
+    return;
+  }
+
+  const categoriasAgrupadas = ORDEN_CATEGORIAS.reduce((acc, categoria) => {
+    acc[categoria] = [];
+    return acc;
+  }, {});
+
+  tarjetas.forEach((tarjeta) => {
+    const categoria = tarjeta.dataset.categoria || "otros";
+    if (!categoriasAgrupadas[categoria]) {
+      categoriasAgrupadas[categoria] = [];
+    }
+    categoriasAgrupadas[categoria].push(tarjeta);
+  });
+
+  menu.innerHTML = "";
+  ORDEN_CATEGORIAS.forEach((categoria) => {
+    if (categoriasAgrupadas[categoria] && categoriasAgrupadas[categoria].length > 0) {
+      menu.appendChild(crearSeccionCategoria(categoria, categoriasAgrupadas[categoria]));
+    }
+  });
+
+  inicializarBotonesCategorias(getMenuCartas());
+};
+
+const inicializarMenuProductos = () => {
+  reordenarProductosPorCategoria();
+};
+
+const inicializarFiltrosProductos = () => {
+  const filtroCategoria = document.querySelector("[data-filtro-categoria]");
+  const menu = document.querySelector("#menu-comidas");
+
+  if (!filtroCategoria || !menu) {
+    return;
+  }
+
+  const tarjetas = getMenuCartas();
   const avisoSinResultados = document.createElement("p");
   avisoSinResultados.className = "sin-resultados";
   avisoSinResultados.setAttribute("role", "status");
   avisoSinResultados.hidden = true;
   menu.append(avisoSinResultados);
 
-  const normalizar = (texto) => texto.trim().toLocaleLowerCase("es")
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "");
-
   const filtrar = () => {
-    const termino = normalizar(buscador.value);
-    let cantidadVisible = 0;
-
     tarjetas.forEach((tarjeta) => {
-      const coincideTexto = normalizar(tarjeta.textContent).includes(termino);
       const coincideCategoria = filtroCategoria.value === "todos"
         || tarjeta.dataset.categoria === filtroCategoria.value;
 
-      tarjeta.hidden = !(coincideTexto && coincideCategoria);
-      cantidadVisible += tarjeta.hidden ? 0 : 1;
+      tarjeta.hidden = !coincideCategoria;
     });
 
-    avisoSinResultados.hidden = cantidadVisible > 0;
-    avisoSinResultados.textContent = cantidadVisible > 0
-      ? ""
-      : "No encontramos platos con esos filtros. Prueba otra búsqueda.";
+    const tarjetasVisibles = tarjetas.filter((tarjeta) => !tarjeta.hidden);
+    if (tarjetasVisibles.length > 0) {
+      reordenarProductosPorCategoria(tarjetasVisibles);
+      avisoSinResultados.hidden = true;
+      avisoSinResultados.textContent = "";
+      return;
+    }
+
+    menu.innerHTML = "";
+    menu.appendChild(avisoSinResultados);
+    avisoSinResultados.hidden = false;
+    avisoSinResultados.textContent = "No encontramos productos en esta categoría.";
+    inicializarBotonesCategorias([]);
   };
 
-  buscador.addEventListener("input", filtrar);
   filtroCategoria.addEventListener("change", filtrar);
 };
 
@@ -226,5 +328,6 @@ const inicializarVisorLogo = () => {
 document.addEventListener("DOMContentLoaded", () => {
   renderProducto();
   inicializarVisorLogo();
+  inicializarMenuProductos();
   inicializarFiltrosProductos();
 });
